@@ -33,7 +33,6 @@ void RigidBody::updatePhysics(double dt) {
 	Vector k1_pos_derivative = velocity;
 	Vector k1_vel_derivative = k1_netForce / mass;
 
-	Vector temp_pos_2 = position + k1_pos_derivative * (dt / 2.0);
 	Vector temp_vel_2 = velocity + k1_vel_derivative * (dt / 2.0);
 
 	Vector dragForce2 = env.customDrag(temp_vel_2, 0.5, 1.0);
@@ -42,7 +41,6 @@ void RigidBody::updatePhysics(double dt) {
 	Vector k2_pos_derivative = temp_vel_2;
 	Vector k2_vel_derivative = k2_netForce / mass;
 
-	Vector temp_pos_3 = position + k2_pos_derivative * (dt / 2.0);
 	Vector temp_vel_3 = velocity + k2_vel_derivative * (dt / 2.0);
 
 	Vector dragForce3 = env.customDrag(temp_vel_3, 0.5, 1.0);
@@ -51,7 +49,6 @@ void RigidBody::updatePhysics(double dt) {
 	Vector k3_pos_derivative = temp_vel_3;
 	Vector k3_vel_derivative = k3_netForce / mass;
 
-	Vector temp_pos_4 = position + k3_pos_derivative * dt;
 	Vector temp_vel_4 = velocity + k3_vel_derivative * dt;
 
 	Vector dragForce4 = env.customDrag(temp_vel_4, 0.5, 1.0);
