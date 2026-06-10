@@ -23,6 +23,6 @@ void SimulationWorker::nextStep() {
 
 	if (m_rocket->getPosition().getZ() <= 0) {
 		m_simTimer->stop();
-		this->simulationFinished();
+		emit simulationFinished();
 	}
 }

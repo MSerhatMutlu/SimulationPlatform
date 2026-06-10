@@ -5,10 +5,10 @@
 #include <QTimer>
 #include <memory>
 
-class SimulationWorker : public QObject{
-	Q_OBjECT
+class SimulationWorker : public QObject {
+	Q_OBJECT
 public:
-	SimulationWorker(double initVel, double angle, QObject* parent = nullptr);
+	SimulationWorker(double initVel, double mass, double angle, QObject* parent = nullptr);
 	~SimulationWorker();
 
 signals:
@@ -24,4 +24,4 @@ private:
 	QTimer* m_simTimer;
 	double m_dt;
 	double m_elapsedTime;
-}
+};

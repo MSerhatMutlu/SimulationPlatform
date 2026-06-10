@@ -14,16 +14,6 @@
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QWidget" name="plotWidget" native="true">
-    <property name="geometry">
-     <rect>
-      <x>0</x>
-      <y>-1</y>
-      <width>371</width>
-      <height>541</height>
-     </rect>
-    </property>
-   </widget>
    <widget class="QPushButton" name="btnStart">
     <property name="geometry">
      <rect>
@@ -76,6 +66,16 @@
      <string>TextLabel</string>
     </property>
    </widget>
+   <widget class="QGraphicsView" name="plotWidget">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>0</y>
+      <width>531</width>
+      <height>551</height>
+     </rect>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
@@ -83,7 +83,7 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>33</height>
+     <height>25</height>
     </rect>
    </property>
   </widget>
