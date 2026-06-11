@@ -1,4 +1,4 @@
-﻿cmake_minimum_required(VERSION 3.10)
+﻿cmake_minimum_required(VERSION 3.20)
 project(SimulationPlatform VERSION 1.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
@@ -17,18 +17,7 @@ add_executable(SimulationPlatform main.cpp
 				core/Environment.cpp
 				core/Target.cpp "MainWindow.cpp") 
 
+target_compile_features(SimulationPlatform PRIVATE cxx_std_20)
 target_include_directories(SimulationPlatform PRIVATE core)
 target_link_libraries(SimulationPlatform PRIVATE Qt6::Core Qt6::Widgets)
 
-if(WIN32)
-    get_target_property(_qt_bindir Qt6::Widgets LOCATION)
-    get_filename_component(_qt_bindir "${_qt_bindir}" DIRECTORY)
-
-    add_custom_command(TARGET SimulationPlatform POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        "${_qt_bindir}/Qt6Core.dll"
-        "${_qt_bindir}/Qt6Widgets.dll"
-        "${_qt_bindir}/Qt6Gui.dll"
-        $<TARGET_FILE_DIR:SimulationPlatform>
-    )
-endif()

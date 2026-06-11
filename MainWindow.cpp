@@ -60,7 +60,7 @@ void MainWindow::handleTelemetry(double x, double z, double speed, double time) 
     double screenX = x / scale;
     double screenY = ui->plotWidget->height() - (z / scale) - paddingFromBottom;
 
-    double targetRealX = 2000.0;
+    double targetRealX = 200.0;
     double targetScreenX = targetRealX / scale;
     double targetScreenY = ui->plotWidget->height() - paddingFromBottom;
 
