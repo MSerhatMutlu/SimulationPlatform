@@ -1,5 +1,6 @@
 #include "MainWindow.h"
 #include "ui_MainWindow.h"
+#include <QMessageBox>
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
@@ -14,8 +15,9 @@ MainWindow::MainWindow(QWidget* parent)
 
     ui->plotWidget->setBackgroundBrush(QBrush(QColor(30, 30, 30)));
 
-    m_rocketMarker = m_scene->addEllipse(-6, -6, 12, 12, QPen(Qt::red), QBrush(Qt::red));
-    m_rocketMarker->setVisible(false);
+    QPolygonF rocketShape;
+    rocketShape << QPointF(10, 0) << QPointF(-5, 5) << QPointF(-5, -5);
+    m_rocketMarker = m_scene->addPolygon(rocketShape, QPen(Qt::red), QBrush(Qt::red));    m_rocketMarker->setVisible(false);
 
     m_targetMarker = m_scene->addEllipse(-8, -8, 16, 16, QPen(Qt::cyan), QBrush(Qt::transparent));
     m_targetMarker->setVisible(false);
@@ -36,7 +38,7 @@ void MainWindow::onStartButtonClicked() {
     m_trajectoryPoints.clear();
 
     m_worker.reset();
-    m_worker = std::make_unique<SimulationWorker>(100.0, 50.0, 45.0, this);
+    m_worker = std::make_unique<SimulationWorker>(100.0, 85.0, 45.0, this);
 
     connect(m_worker.get(), &SimulationWorker::telemetryUpdated,
         this, &MainWindow::handleTelemetry);
@@ -48,40 +50,57 @@ void MainWindow::onStartButtonClicked() {
     ui->btnStart->setEnabled(false);
 }
 
-void MainWindow::handleTelemetry(double x, double z, double speed, double time) {
-    double totalDistance = std::sqrt((x * x) + (z * z));
-    ui->lblDistance->setText(QString::number(totalDistance, 'f', 2) + " m");
+void MainWindow::handleTelemetry(double rocketX, double rocketZ, double targetX, double targetZ, double speed, double time) {
+    double dx = targetX - rocketX;
+    double dz = targetZ - rocketZ;
+    double currentDistance = std::sqrt(dx * dx + dz * dz);
+
+    ui->lblDistance->setText(QString::number(currentDistance, 'f', 2) + " m");
     ui->lblSpeed->setText(QString::number(speed, 'f', 2) + " m/s");
     ui->lblTime->setText(QString::number(time, 'f', 2) + " s");
 
-    const double scale = 5.0;
-    const double paddingFromBottom = 40.0; 
+    const double scale = 1.5;
+    const double paddingFromBottom = 40.0;
 
-    double screenX = x / scale;
-    double screenY = ui->plotWidget->height() - (z / scale) - paddingFromBottom;
+    double rScreenX = rocketX / scale;
+    double rScreenY = ui->plotWidget->height() - (rocketZ / scale) - paddingFromBottom;
 
-    double targetRealX = 200.0;
-    double targetScreenX = targetRealX / scale;
-    double targetScreenY = ui->plotWidget->height() - paddingFromBottom;
+    double tScreenX = targetX / scale;
+    double tScreenY = ui->plotWidget->height() - (targetZ / scale) - paddingFromBottom;
 
-    m_rocketMarker->setPos(screenX, screenY);
-    m_targetMarker->setPos(targetScreenX, targetScreenY);
+    m_rocketMarker->setPos(rScreenX, rScreenY);
+    m_targetMarker->setPos(tScreenX, tScreenY);
 
     m_rocketMarker->setVisible(true);
     m_targetMarker->setVisible(true);
 
     if (!m_trajectoryPoints.empty()) {
         QPointF lastPoint = m_trajectoryPoints.back();
-        QGraphicsLineItem* line = m_scene->addLine(lastPoint.x(), lastPoint.y(),
-            screenX, screenY,
+        double screenDx = rScreenX - lastPoint.x();
+        double screenDy = rScreenY - lastPoint.y();
+
+        double visualAngle = std::atan2(screenDy, screenDx) * 180.0 / 3.14159265;
+        m_rocketMarker->setRotation(visualAngle);
+    }
+
+    if (!m_trajectoryPoints.empty()) {
+        QPointF lastPoint = m_trajectoryPoints.back();
+        QGraphicsLineItem* line = m_scene->addLine(lastPoint.x(), lastPoint.y(), rScreenX, rScreenY,
             QPen(Qt::yellow, 2, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
         m_drawnLines.push_back(line);
     }
-    m_trajectoryPoints.push_back(QPointF(screenX, screenY));
+    m_trajectoryPoints.push_back(QPointF(rScreenX, rScreenY));
 }
 
-void MainWindow::handleSimulationFinished() {
+void MainWindow::handleSimulationFinished(bool success) {
     ui->btnStart->setEnabled(true);
+
+    if (success) {
+        QMessageBox::information(this, "Simulation Result", "MISSION COMPLETED!\nTarget successfully intercepted.");
+    }
+    else {
+        QMessageBox::critical(this, "Simulation Result", "MISSION FAILED!\nMissile hit the ground.");
+    }
 
     m_worker.reset();
 }

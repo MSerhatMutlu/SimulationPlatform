@@ -1,6 +1,7 @@
 #pragma once
 #include <iostream>
-#include "Rigidbody.h"
+#include "../core/RigidBody.h"
+#include "../core/Target.h"
 #include <QObject>
 #include <QTimer>
 #include <memory>
@@ -12,8 +13,8 @@ public:
 	~SimulationWorker();
 
 signals:
-	void telemetryUpdated(double x, double z, double velocity, double time);
-	void simulationFinished();
+	void telemetryUpdated(double rocketX, double rocketZ, double targetX, double targetZ, double velocity, double time);
+	void simulationFinished(bool success);
 
 public slots:
 	void startSimulation();
@@ -21,6 +22,7 @@ public slots:
 
 private:
 	std::unique_ptr<RigidBody> m_rocket;
+	std::unique_ptr<Target> m_target;
 	QTimer* m_simTimer;
 	double m_dt;
 	double m_elapsedTime;

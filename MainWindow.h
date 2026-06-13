@@ -4,6 +4,8 @@
 #include <QMainWindow>
 #include <QGraphicsScene>
 #include <QGraphicsEllipseItem>
+#include <QGraphicsPolygonItem>
+#include <QGraphicsLineItem>
 #include <QVector>
 #include <QPointF>
 #include <memory>
@@ -22,14 +24,14 @@ public:
 
 private slots:
     void onStartButtonClicked();
-    void handleTelemetry(double x, double z, double speed, double time);
-    void handleSimulationFinished();
+    void handleTelemetry(double rocketX, double rocketZ, double targetX, double targetZ, double speed, double time);
+    void handleSimulationFinished(bool success);
 
 private:
     Ui::MainWindow* ui;
     std::unique_ptr<SimulationWorker> m_worker;
     QGraphicsScene* m_scene = nullptr;
-    QGraphicsEllipseItem* m_rocketMarker = nullptr;
+    QGraphicsPolygonItem* m_rocketMarker = nullptr;
     QGraphicsEllipseItem* m_targetMarker = nullptr;
     QVector<QPointF> m_trajectoryPoints;
     QVector<QGraphicsLineItem*> m_drawnLines;
