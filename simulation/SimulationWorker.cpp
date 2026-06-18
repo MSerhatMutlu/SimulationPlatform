@@ -6,7 +6,7 @@ SimulationWorker::SimulationWorker(double initVel, double mass, double angle, QO
 	m_rocket = std::make_unique<RigidBody>(Vector(0,0,0),
 											Vector(initVel * std::cos(angle * PI/180),0, initVel * std::sin(angle * PI / 180)),
 											mass,angle);
-	m_target = std::make_unique<Target>(Vector(400.0, 0, 700.0), Vector(20.0, 0, 0));
+	m_target = std::make_unique<Target>(Vector(250.0, 0, 800.0), Vector(70.0, 0, 50.0));
 	m_simTimer = new QTimer(this);
 	connect(m_simTimer, &QTimer::timeout, this, &SimulationWorker::nextStep);
 }
@@ -21,45 +21,63 @@ void SimulationWorker::nextStep() {
     Vector rPos = m_rocket->getPosition();
     Vector tPos = m_target->getPosition();
     Vector rVel = m_rocket->getVelocity();
+    Vector tVel = m_target->getVelocity();
 
-    double dx = tPos.getX() - rPos.getX();
-    double dz = tPos.getZ() - rPos.getZ();
-    double distanceToTarget = std::sqrt(dx * dx + dz * dz);
+    double distanceToTarget = (tPos - rPos).findMagnitude();
+    if (distanceToTarget >= 50.0){
+        Vector relPos = tPos - rPos;
+        Vector relVel = tVel - rVel;
 
-    double currentSpeed = rVel.findMagnitude();
-    if (currentSpeed < 1.0) currentSpeed = 1.0;
+        double relPosMag = relPos.findMagnitude();
+        double closingSpeed = -relVel.dotProduct(relPos) / relPosMag;
 
-    double timeToTarget = distanceToTarget / currentSpeed;
-    double gravityDrop = 0.15 * 9.81 * timeToTarget * timeToTarget;
+        double timeToCollision = 0.0;
+        if (closingSpeed > 0.1)
+            timeToCollision = relPosMag / closingSpeed;
+        else {
+            timeToCollision = relPosMag / std::max(10.0, relVel.findMagnitude());
+        }
 
-    double aimZ = tPos.getZ() + gravityDrop;
-    double dz_aim = aimZ - rPos.getZ();
+        if (m_elapsedTime < 1.5) {
+            double lookAhead = 2.0;
+            if (timeToCollision > lookAhead)
+                timeToCollision = lookAhead;
+        }
 
-    double targetAngle = std::atan2(dz_aim, dx);
+        // time delay due to air drag and gravity drop
+        timeToCollision *= 1.15;
+        double gravityDrop = 9.81 * timeToCollision * timeToCollision / 2;
 
-    double currentAngle = m_rocket->getPitchAngleRad();
-    double angleDiff = targetAngle - currentAngle;
+        Vector estimatedPos = tPos + tVel * timeToCollision + Vector(0, 0, gravityDrop);
+        Vector toEstPos = estimatedPos - rPos;
 
-    while (angleDiff > PI) angleDiff -= 2 * PI;
-    while (angleDiff < -PI) angleDiff += 2 * PI;
+        double targetAngle = std::atan2(toEstPos.getZ(), toEstPos.getX());
 
-    double maxTurnRate = 0.6;
-    double maxTurnStep = maxTurnRate * m_dt;
+        double currentAngle = m_rocket->getPitchAngleRad();
+        double angleDiff = targetAngle - currentAngle;
 
-    double turnAmount = angleDiff;
-    if (turnAmount > maxTurnStep) turnAmount = maxTurnStep;
-    if (turnAmount < -maxTurnStep) turnAmount = -maxTurnStep;
+        while (angleDiff > PI) angleDiff -= 2 * PI;
+        while (angleDiff < -PI) angleDiff += 2 * PI;
 
-    m_rocket->setPitchAngleRad(currentAngle + turnAmount);
+        double maxTurnRate = 0.7;
+        double maxTurnStep = maxTurnRate * m_dt;
 
-	double burnTime = 5.0;
+        double turnAmount = angleDiff;
+        if (turnAmount > maxTurnStep) turnAmount = maxTurnStep;
+        if (turnAmount < -maxTurnStep) turnAmount = -maxTurnStep;
+
+        m_rocket->setPitchAngleRad(currentAngle + turnAmount);
+    }
+
+	double burnTime = 10.0;
     if (m_elapsedTime < burnTime) {
-		m_rocket->applyThrust(12000.0);
+		m_rocket->applyThrust(10000.0);
     }
 
     m_rocket->updatePhysics(m_dt);
     m_target->updatePosition(m_dt);
     m_elapsedTime += m_dt;
+    double currentSpeed = rVel.findMagnitude();
 
     emit telemetryUpdated(rPos.getX(), rPos.getZ(), tPos.getX(), tPos.getZ(), currentSpeed, m_elapsedTime);
 

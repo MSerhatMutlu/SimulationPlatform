@@ -38,7 +38,7 @@ void MainWindow::onStartButtonClicked() {
     m_trajectoryPoints.clear();
 
     m_worker.reset();
-    m_worker = std::make_unique<SimulationWorker>(100.0, 85.0, 45.0, this);
+    m_worker = std::make_unique<SimulationWorker>(0.0, 85.0, 45.0, this);
 
     connect(m_worker.get(), &SimulationWorker::telemetryUpdated,
         this, &MainWindow::handleTelemetry);
@@ -59,14 +59,16 @@ void MainWindow::handleTelemetry(double rocketX, double rocketZ, double targetX,
     ui->lblSpeed->setText(QString::number(speed, 'f', 2) + " m/s");
     ui->lblTime->setText(QString::number(time, 'f', 2) + " s");
 
-    const double scale = 1.5;
+    const double maxArea = 1500.0;
+
+    double scale = ui->plotWidget->width() / maxArea;
     const double paddingFromBottom = 40.0;
 
-    double rScreenX = rocketX / scale;
-    double rScreenY = ui->plotWidget->height() - (rocketZ / scale) - paddingFromBottom;
+    double rScreenX = rocketX * scale;
+    double rScreenY = ui->plotWidget->height() - (rocketZ * scale) - paddingFromBottom;
 
-    double tScreenX = targetX / scale;
-    double tScreenY = ui->plotWidget->height() - (targetZ / scale) - paddingFromBottom;
+    double tScreenX = targetX * scale;
+    double tScreenY = ui->plotWidget->height() - (targetZ * scale) - paddingFromBottom;
 
     m_rocketMarker->setPos(rScreenX, rScreenY);
     m_targetMarker->setPos(tScreenX, tScreenY);

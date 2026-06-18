@@ -38,6 +38,10 @@ Vector Vector::normalize() const {
 	return Vector(x / magnitude, y / magnitude, z / magnitude);
 }
 
+double Vector::dotProduct(Vector& other) const {
+	return (x * other.getX()) + (y * other.getY()) + (z * other.getZ());
+}
+
 double Vector::getX() const {
 	return x;
 }

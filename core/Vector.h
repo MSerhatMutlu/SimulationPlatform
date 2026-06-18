@@ -20,6 +20,8 @@ public:
 
 	double findMagnitude() const;
 
+	double dotProduct(Vector& other) const;
+
 	Vector normalize() const;
 
 	double getX() const;
