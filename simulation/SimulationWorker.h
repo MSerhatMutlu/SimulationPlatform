@@ -1,5 +1,4 @@
 #pragma once
-#include <iostream>
 #include "../core/RigidBody.h"
 #include "../core/Target.h"
 #include <QObject>
@@ -10,7 +9,6 @@ class SimulationWorker : public QObject {
 	Q_OBJECT
 public:
 	SimulationWorker(double initVel, double mass, double angle, QObject* parent = nullptr);
-	~SimulationWorker();
 
 signals:
 	void telemetryUpdated(double rocketX, double rocketZ, double targetX, double targetZ, double velocity, double time);

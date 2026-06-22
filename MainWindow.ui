@@ -17,53 +17,53 @@
    <widget class="QPushButton" name="btnStart">
     <property name="geometry">
      <rect>
-      <x>670</x>
-      <y>0</y>
+      <x>600</x>
+      <y>100</y>
       <width>81</width>
       <height>26</height>
      </rect>
     </property>
     <property name="text">
-     <string>PushButton</string>
+     <string>Start</string>
     </property>
    </widget>
    <widget class="QLabel" name="lblSpeed">
     <property name="geometry">
      <rect>
-      <x>680</x>
-      <y>40</y>
-      <width>49</width>
-      <height>16</height>
+      <x>580</x>
+      <y>180</y>
+      <width>121</width>
+      <height>20</height>
      </rect>
     </property>
     <property name="text">
-     <string>TextLabel</string>
+     <string>Speed: 0.0 m/s</string>
     </property>
    </widget>
    <widget class="QLabel" name="lblDistance">
     <property name="geometry">
      <rect>
-      <x>680</x>
-      <y>70</y>
-      <width>49</width>
-      <height>16</height>
+      <x>580</x>
+      <y>220</y>
+      <width>131</width>
+      <height>20</height>
      </rect>
     </property>
     <property name="text">
-     <string>TextLabel</string>
+     <string>Distance: 0.0 m</string>
     </property>
    </widget>
    <widget class="QLabel" name="lblTime">
     <property name="geometry">
      <rect>
-      <x>680</x>
-      <y>100</y>
-      <width>49</width>
-      <height>16</height>
+      <x>580</x>
+      <y>260</y>
+      <width>141</width>
+      <height>20</height>
      </rect>
     </property>
     <property name="text">
-     <string>TextLabel</string>
+     <string> Time Elapsed: 0.00 s</string>
     </property>
    </widget>
    <widget class="QGraphicsView" name="plotWidget">

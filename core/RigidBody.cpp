@@ -1,4 +1,5 @@
 #include <iostream>
+#include <cmath>
 #include "RigidBody.h"
 #include "Environment.h"
 #include "Vector.h"

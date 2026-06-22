@@ -6,12 +6,10 @@ SimulationWorker::SimulationWorker(double initVel, double mass, double angle, QO
 	m_rocket = std::make_unique<RigidBody>(Vector(0,0,0),
 											Vector(initVel * std::cos(angle * PI/180),0, initVel * std::sin(angle * PI / 180)),
 											mass,angle);
-	m_target = std::make_unique<Target>(Vector(250.0, 0, 800.0), Vector(70.0, 0, 50.0));
+	m_target = std::make_unique<Target>(Vector(300.0, 0, 500.0), Vector(65.0, 0, 40.0));
 	m_simTimer = new QTimer(this);
 	connect(m_simTimer, &QTimer::timeout, this, &SimulationWorker::nextStep);
 }
-
-SimulationWorker::~SimulationWorker() {}
 
 void SimulationWorker::startSimulation() {
 	m_simTimer->start(static_cast<int>(m_dt * 1000));

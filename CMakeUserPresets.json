@@ -41,8 +41,12 @@
         "QTDIR": "C:/Qt/6.11.1/msvc2022_64"
       },
       "architecture": {
-        "strategy": "external",
+        "strategy": "set",
         "value": "x64"
+      },
+      "toolset": {
+        "strategy": "set",
+        "value": "host=x64"
       },
       "generator": "Visual Studio 17 2022",
       "vendor": {

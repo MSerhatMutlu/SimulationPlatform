@@ -1,6 +1,8 @@
 #include "MainWindow.h"
 #include "ui_MainWindow.h"
 #include <QMessageBox>
+#include <QPainter>
+#include <QPushButton>
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
@@ -55,11 +57,11 @@ void MainWindow::handleTelemetry(double rocketX, double rocketZ, double targetX,
     double dz = targetZ - rocketZ;
     double currentDistance = std::sqrt(dx * dx + dz * dz);
 
-    ui->lblDistance->setText(QString::number(currentDistance, 'f', 2) + " m");
-    ui->lblSpeed->setText(QString::number(speed, 'f', 2) + " m/s");
-    ui->lblTime->setText(QString::number(time, 'f', 2) + " s");
+    ui->lblDistance->setText("Distance: " + QString::number(currentDistance, 'f', 1) + " m");
+    ui->lblSpeed->setText("Speed: " + QString::number(speed, 'f', 1) + " m/s");
+    ui->lblTime->setText("Time Elapsed: " + QString::number(time, 'f', 2) + " s");
 
-    const double maxArea = 1500.0;
+    const double maxArea = 1000.0;
 
     double scale = ui->plotWidget->width() / maxArea;
     const double paddingFromBottom = 40.0;
