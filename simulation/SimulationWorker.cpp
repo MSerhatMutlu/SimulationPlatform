@@ -7,6 +7,7 @@ SimulationWorker::SimulationWorker(double initVel, double mass, double angle, QO
 											Vector(initVel * std::cos(angle * PI/180),0, initVel * std::sin(angle * PI / 180)),
 											mass,angle);
 	m_target = std::make_unique<Target>(Vector(300.0, 0, 500.0), Vector(65.0, 0, 40.0));
+    m_camera = std::make_unique<VirtualCamera>(200,200, 45.0);
 	m_simTimer = new QTimer(this);
 	connect(m_simTimer, &QTimer::timeout, this, &SimulationWorker::nextStep);
 }
@@ -77,7 +78,15 @@ void SimulationWorker::nextStep() {
     m_elapsedTime += m_dt;
     double currentSpeed = rVel.findMagnitude();
 
-    emit telemetryUpdated(rPos.getX(), rPos.getZ(), tPos.getX(), tPos.getZ(), currentSpeed, m_elapsedTime);
+    cv::Mat Frame = m_camera->createEmptyFrame();
+    int PixelX = 0;
+    int PixelY = 0;
+    bool isVisible = m_camera->getPixelOffset(rPos, tPos, m_rocket->getPitchAngleRad(), PixelX, PixelY);
+    m_camera->renderUHD(Frame, isVisible, PixelX, PixelY);
+    QImage qimage = m_camera->convertMatToQImage(Frame);
+
+
+    emit telemetryUpdated(rPos.getX(), rPos.getZ(), tPos.getX(), tPos.getZ(), currentSpeed, m_elapsedTime, qimage);
 
     if (m_rocket->getPosition().getZ() <= 0) {
         m_simTimer->stop();

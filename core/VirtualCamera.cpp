@@ -43,5 +43,13 @@ void VirtualCamera::renderUHD(cv::Mat& Frame, bool isVisible, int PixelX, int Pi
 	}
 
 	cv::putText(Frame, "SEEKER MODE: ACTIVE", cv::Point(20, 30), cv::FONT_HERSHEY_PLAIN, 1.0, cv::Scalar(0, 255, 0), 1, cv::LINE_AA);
+}
 
+QImage VirtualCamera::convertMatToQImage(const cv::Mat& src) {
+	cv::Mat tempMat;
+	cv::cvtColor(src, tempMat, cv::COLOR_BGR2RGB);
+
+	QImage image(tempMat.data, tempMat.cols, tempMat.rows, tempMat.step, QImage::Format_RGB888);
+
+	return image.copy();
 }

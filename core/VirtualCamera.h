@@ -1,5 +1,6 @@
 #include <opencv2/opencv.hpp>
 #include "Vector.h"
+#include <QImage>
 
 class VirtualCamera {
 public:
@@ -9,6 +10,7 @@ public:
 	cv::Mat createEmptyFrame();
 	bool getPixelOffset(const Vector& rocketPos, const Vector& targetPos, double rocketAngleRad, int& pixelX, int& pixelY);
 	void renderUHD(cv::Mat& Frame, bool isVisible, int PixelX, int PİxelY);
+	QImage convertMatToQImage(const cv::Mat& src);
 
 private:
 	double m_height;
