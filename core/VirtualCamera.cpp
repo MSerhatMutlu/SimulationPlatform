@@ -29,3 +29,19 @@ bool VirtualCamera::getPixelOffset(const Vector& rocketPos, const Vector& target
 	pixelX = 0;
 	return true;
 }
+
+void VirtualCamera::renderUHD(cv::Mat& Frame, bool isVisible, int PixelX, int PixelY) {
+	cv::line(Frame, cv::Point(m_width / 2 - 15, m_height / 2), cv::Point(m_width / 2 + 15, m_height / 2), cv::Scalar(0,255,0), 1);
+	cv::line(Frame, cv::Point(m_width / 2, m_height / 2 - 15), cv::Point(m_width / 2, m_height / 2 + 15), cv::Scalar(0, 255, 0), 1);
+
+	if (isVisible) {
+		cv::circle(Frame, cv::Point(m_width / 2 + PixelX, m_height / 2 + PixelY), 10, cv::Scalar(0, 0, 255), 1);
+		cv::putText(Frame, "LOCK ON", cv::Point(m_width / 2 + PixelX - 30, m_height / 2 + PixelY - 15), cv::FONT_HERSHEY_PLAIN, 1.0, cv::Scalar(0, 255, 0), 1, cv::LINE_AA);
+	}
+	else {
+		cv::putText(Frame, "SEARCHING...", cv::Point(m_width / 2 - 40, m_height / 2 + 5), cv::FONT_HERSHEY_PLAIN, 1.0, cv::Scalar(0, 255, 0), 1, cv::LINE_AA);
+	}
+
+	cv::putText(Frame, "SEEKER MODE: ACTIVE", cv::Point(20, 30), cv::FONT_HERSHEY_PLAIN, 1.0, cv::Scalar(0, 255, 0), 1, cv::LINE_AA);
+
+}

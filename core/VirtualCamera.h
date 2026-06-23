@@ -8,7 +8,7 @@ public:
 
 	cv::Mat createEmptyFrame();
 	bool getPixelOffset(const Vector& rocketPos, const Vector& targetPos, double rocketAngleRad, int& pixelX, int& pixelY);
-
+	void renderUHD(cv::Mat& Frame, bool isVisible, int PixelX, int PİxelY);
 
 private:
 	double m_height;
