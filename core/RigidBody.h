@@ -13,6 +13,7 @@ public:
 	void applyThrust(double magnitude);
 
 	double getMass() const;
+	void setMass(double newMass);
 	double getPitchAngleDeg() const;
 	double getPitchAngleRad() const;
 	void setPitchAngleDeg(double angle);

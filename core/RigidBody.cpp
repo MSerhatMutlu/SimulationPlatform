@@ -77,6 +77,10 @@ double RigidBody::getMass() const {
 	return mass;
 }
 
+void RigidBody::setMass(double newMass) {
+	mass = newMass;
+}
+
 double RigidBody::getPitchAngleDeg() const {
 	return pitchAngle * 180.0 / PI;
 }

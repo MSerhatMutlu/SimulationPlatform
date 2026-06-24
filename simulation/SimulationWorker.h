@@ -13,7 +13,8 @@ public:
 	SimulationWorker(double initVel, double mass, double angle, QObject* parent = nullptr);
 
 signals:
-	void telemetryUpdated(double rocketX, double rocketZ, double targetX, double targetZ, double velocity, double time, QImage cameraFrame);
+	void telemetryUpdated(double rocketX, double rocketZ, double targetX, double targetZ, double velocity, double time);
+	void imageUpdated(QImage cameraFrame);
 	void simulationFinished(bool success);
 
 public slots:

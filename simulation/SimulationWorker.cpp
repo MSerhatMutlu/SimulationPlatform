@@ -3,10 +3,10 @@
 const double PI = 3.14159265358979323846;
 
 SimulationWorker::SimulationWorker(double initVel, double mass, double angle, QObject* parent) : QObject(parent), m_dt(0.01), m_elapsedTime(0.0){
-	m_rocket = std::make_unique<RigidBody>(Vector(0,0,0),
+	m_rocket = std::make_unique<RigidBody>(Vector(100,0,0),
 											Vector(initVel * std::cos(angle * PI/180),0, initVel * std::sin(angle * PI / 180)),
 											mass,angle);
-	m_target = std::make_unique<Target>(Vector(300.0, 0, 500.0), Vector(65.0, 0, 40.0));
+	m_target = std::make_unique<Target>(Vector(300.0, 0, 500.0), Vector(65.0, 0, 0.0));
     m_camera = std::make_unique<VirtualCamera>(200,200, 45.0);
 	m_simTimer = new QTimer(this);
 	connect(m_simTimer, &QTimer::timeout, this, &SimulationWorker::nextStep);
@@ -68,8 +68,11 @@ void SimulationWorker::nextStep() {
         m_rocket->setPitchAngleRad(currentAngle + turnAmount);
     }
 
+    double massLoss = 4.0;
 	double burnTime = 10.0;
     if (m_elapsedTime < burnTime) {
+        double newMass = m_rocket->getMass() - massLoss * m_dt;
+        m_rocket->setMass(newMass);
 		m_rocket->applyThrust(10000.0);
     }
 
@@ -85,8 +88,8 @@ void SimulationWorker::nextStep() {
     m_camera->renderUHD(Frame, isVisible, PixelX, PixelY);
     QImage qimage = m_camera->convertMatToQImage(Frame);
 
-
-    emit telemetryUpdated(rPos.getX(), rPos.getZ(), tPos.getX(), tPos.getZ(), currentSpeed, m_elapsedTime, qimage);
+    emit imageUpdated(qimage);
+    emit telemetryUpdated(rPos.getX(), rPos.getZ(), tPos.getX(), tPos.getZ(), currentSpeed, m_elapsedTime);
 
     if (m_rocket->getPosition().getZ() <= 0) {
         m_simTimer->stop();

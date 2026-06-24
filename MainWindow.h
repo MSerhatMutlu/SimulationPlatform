@@ -25,6 +25,7 @@ public:
 private slots:
     void onStartButtonClicked();
     void handleTelemetry(double rocketX, double rocketZ, double targetX, double targetZ, double speed, double time);
+    void handleImage(QImage qimage);
     void handleSimulationFinished(bool success);
 
 private:

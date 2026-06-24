@@ -17,6 +17,13 @@ MainWindow::MainWindow(QWidget* parent)
 
     ui->plotWidget->setBackgroundBrush(QBrush(QColor(30, 30, 30)));
 
+    ui->FirstSpeed->setValue(0.0);
+    ui->Mass->setValue(80.0);
+    ui->Mass->setMinimum(0.0);
+    ui->Angle->setValue(45.0);
+    ui->Angle->setMinimum(-180.0);
+    ui->Angle->setMaximum(180.0);
+
     QPolygonF rocketShape;
     rocketShape << QPointF(10, 0) << QPointF(-5, 5) << QPointF(-5, -5);
     m_rocketMarker = m_scene->addPolygon(rocketShape, QPen(Qt::red), QBrush(Qt::red));    m_rocketMarker->setVisible(false);
@@ -40,10 +47,13 @@ void MainWindow::onStartButtonClicked() {
     m_trajectoryPoints.clear();
 
     m_worker.reset();
-    m_worker = std::make_unique<SimulationWorker>(0.0, 85.0, 45.0, this);
+    m_worker = std::make_unique<SimulationWorker>(ui->FirstSpeed->value(), ui->Mass->value(), ui->Angle->value(), this);
 
     connect(m_worker.get(), &SimulationWorker::telemetryUpdated,
         this, &MainWindow::handleTelemetry);
+
+    connect(m_worker.get(), &SimulationWorker::imageUpdated,
+        this, &MainWindow::handleImage);
 
     connect(m_worker.get(), &SimulationWorker::simulationFinished,
         this, &MainWindow::handleSimulationFinished);
@@ -53,15 +63,7 @@ void MainWindow::onStartButtonClicked() {
 }
 
 void MainWindow::handleTelemetry(double rocketX, double rocketZ, double targetX, double targetZ, double speed, double time) {
-    double dx = targetX - rocketX;
-    double dz = targetZ - rocketZ;
-    double currentDistance = std::sqrt(dx * dx + dz * dz);
-
-    ui->lblDistance->setText("Distance: " + QString::number(currentDistance, 'f', 1) + " m");
-    ui->lblSpeed->setText("Speed: " + QString::number(speed, 'f', 1) + " m/s");
-    ui->lblTime->setText("Time Elapsed: " + QString::number(time, 'f', 2) + " s");
-
-    const double maxArea = 1000.0;
+    const double maxArea = 2000.0;
 
     double scale = ui->plotWidget->width() / maxArea;
     const double paddingFromBottom = 40.0;
@@ -94,6 +96,10 @@ void MainWindow::handleTelemetry(double rocketX, double rocketZ, double targetX,
         m_drawnLines.push_back(line);
     }
     m_trajectoryPoints.push_back(QPointF(rScreenX, rScreenY));
+}
+
+void MainWindow::handleImage(QImage qimage) {
+    ui->cameraLabel->setPixmap(QPixmap::fromImage(qimage));
 }
 
 void MainWindow::handleSimulationFinished(bool success) {
