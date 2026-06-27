@@ -28,7 +28,7 @@ void RigidBody::updatePhysics(double dt) {
 	Vector thrustForce = netForce;
 
 	Vector gravityForce = Vector(0, 0, -9.81) * mass;
-	Vector dragForce = env.customDrag(velocity, 0.5, 1.0);
+	Vector dragForce = env.customDrag(velocity, 0.12, 1.0);
 	Vector k1_netForce = gravityForce + thrustForce + dragForce;
 
 	Vector k1_pos_derivative = velocity;
@@ -36,7 +36,7 @@ void RigidBody::updatePhysics(double dt) {
 
 	Vector temp_vel_2 = velocity + k1_vel_derivative * (dt / 2.0);
 
-	Vector dragForce2 = env.customDrag(temp_vel_2, 0.5, 1.0);
+	Vector dragForce2 = env.customDrag(temp_vel_2, 0.12, 1.0);
 	Vector k2_netForce = gravityForce + thrustForce + dragForce2;
 
 	Vector k2_pos_derivative = temp_vel_2;
@@ -44,7 +44,7 @@ void RigidBody::updatePhysics(double dt) {
 
 	Vector temp_vel_3 = velocity + k2_vel_derivative * (dt / 2.0);
 
-	Vector dragForce3 = env.customDrag(temp_vel_3, 0.5, 1.0);
+	Vector dragForce3 = env.customDrag(temp_vel_3, 0.12, 1.0);
 	Vector k3_netForce = gravityForce + thrustForce + dragForce3;
 
 	Vector k3_pos_derivative = temp_vel_3;
@@ -52,7 +52,7 @@ void RigidBody::updatePhysics(double dt) {
 
 	Vector temp_vel_4 = velocity + k3_vel_derivative * dt;
 
-	Vector dragForce4 = env.customDrag(temp_vel_4, 0.5, 1.0);
+	Vector dragForce4 = env.customDrag(temp_vel_4, 0.12, 1.0);
 	Vector k4_netForce = gravityForce + thrustForce + dragForce4;
 
 	Vector k4_pos_derivative = temp_vel_4;
@@ -69,6 +69,12 @@ void RigidBody::updatePhysics(double dt) {
 
 void RigidBody::applyThrust(double magnitude) {
 	Vector thrustForce(std::cos(pitchAngle), 0, std::sin(pitchAngle));
+
+	applyForce(thrustForce * magnitude);
+}
+
+void RigidBody::applyThrustRad(double magnitude, double rad) {
+	Vector thrustForce(std::cos(rad), 0, std::sin(rad));
 
 	applyForce(thrustForce * magnitude);
 }

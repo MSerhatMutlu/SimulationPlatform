@@ -53,3 +53,15 @@ QImage VirtualCamera::convertMatToQImage(const cv::Mat& src) {
 
 	return image.copy();
 }
+
+double VirtualCamera::getFieldOfView() const {
+	return m_fieldOfView;
+}
+
+double VirtualCamera::getHeight() const {
+	return m_height;
+}
+
+double VirtualCamera::getWidth() const {
+	return m_width;
+}

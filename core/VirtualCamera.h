@@ -11,6 +11,9 @@ public:
 	bool getPixelOffset(const Vector& rocketPos, const Vector& targetPos, double rocketAngleRad, int& pixelX, int& pixelY);
 	void renderUHD(cv::Mat& Frame, bool isVisible, int PixelX, int PİxelY);
 	QImage convertMatToQImage(const cv::Mat& src);
+	double getFieldOfView() const;
+	double getHeight() const;
+	double getWidth() const;
 
 private:
 	double m_height;

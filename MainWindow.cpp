@@ -63,7 +63,7 @@ void MainWindow::onStartButtonClicked() {
 }
 
 void MainWindow::handleTelemetry(double rocketX, double rocketZ, double targetX, double targetZ, double speed, double time) {
-    const double maxArea = 2000.0;
+    const double maxArea = 10000.0;
 
     double scale = ui->plotWidget->width() / maxArea;
     const double paddingFromBottom = 40.0;

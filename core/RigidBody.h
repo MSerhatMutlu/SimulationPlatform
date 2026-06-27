@@ -11,6 +11,7 @@ public:
 	void clearForces();
 	void updatePhysics(double dt);
 	void applyThrust(double magnitude);
+	void applyThrustRad(double magnitude, double rad);
 
 	double getMass() const;
 	void setMass(double newMass);

@@ -1,15 +1,18 @@
 #include "SimulationWorker.h"
 
 const double PI = 3.14159265358979323846;
+const double navConst = 4.0;
 
 SimulationWorker::SimulationWorker(double initVel, double mass, double angle, QObject* parent) : QObject(parent), m_dt(0.01), m_elapsedTime(0.0){
-	m_rocket = std::make_unique<RigidBody>(Vector(100,0,0),
+	m_rocket = std::make_unique<RigidBody>(Vector(0,0,0),
 											Vector(initVel * std::cos(angle * PI/180),0, initVel * std::sin(angle * PI / 180)),
 											mass,angle);
-	m_target = std::make_unique<Target>(Vector(300.0, 0, 500.0), Vector(65.0, 0, 0.0));
-    m_camera = std::make_unique<VirtualCamera>(200,200, 45.0);
+	m_target = std::make_unique<Target>(Vector(5500.0, 0, 2500.0), Vector(-300.0, 0, 0.0));
+    m_camera = std::make_unique<VirtualCamera>(200,200, 40.0);
 	m_simTimer = new QTimer(this);
 	connect(m_simTimer, &QTimer::timeout, this, &SimulationWorker::nextStep);
+    m_prevAngleDiff = 0.0;
+    m_lockLostCounter = 0;
 }
 
 void SimulationWorker::startSimulation() {
@@ -22,71 +25,92 @@ void SimulationWorker::nextStep() {
     Vector rVel = m_rocket->getVelocity();
     Vector tVel = m_target->getVelocity();
 
-    double distanceToTarget = (tPos - rPos).findMagnitude();
-    if (distanceToTarget >= 50.0){
-        Vector relPos = tPos - rPos;
-        Vector relVel = tVel - rVel;
-
-        double relPosMag = relPos.findMagnitude();
-        double closingSpeed = -relVel.dotProduct(relPos) / relPosMag;
-
-        double timeToCollision = 0.0;
-        if (closingSpeed > 0.1)
-            timeToCollision = relPosMag / closingSpeed;
-        else {
-            timeToCollision = relPosMag / std::max(10.0, relVel.findMagnitude());
-        }
-
-        if (m_elapsedTime < 1.5) {
-            double lookAhead = 2.0;
-            if (timeToCollision > lookAhead)
-                timeToCollision = lookAhead;
-        }
-
-        // time delay due to air drag and gravity drop
-        timeToCollision *= 1.15;
-        double gravityDrop = 9.81 * timeToCollision * timeToCollision / 2;
-
-        Vector estimatedPos = tPos + tVel * timeToCollision + Vector(0, 0, gravityDrop);
-        Vector toEstPos = estimatedPos - rPos;
-
-        double targetAngle = std::atan2(toEstPos.getZ(), toEstPos.getX());
-
-        double currentAngle = m_rocket->getPitchAngleRad();
-        double angleDiff = targetAngle - currentAngle;
-
-        while (angleDiff > PI) angleDiff -= 2 * PI;
-        while (angleDiff < -PI) angleDiff += 2 * PI;
-
-        double maxTurnRate = 0.7;
-        double maxTurnStep = maxTurnRate * m_dt;
-
-        double turnAmount = angleDiff;
-        if (turnAmount > maxTurnStep) turnAmount = maxTurnStep;
-        if (turnAmount < -maxTurnStep) turnAmount = -maxTurnStep;
-
-        m_rocket->setPitchAngleRad(currentAngle + turnAmount);
-    }
-
-    double massLoss = 4.0;
-	double burnTime = 10.0;
-    if (m_elapsedTime < burnTime) {
-        double newMass = m_rocket->getMass() - massLoss * m_dt;
-        m_rocket->setMass(newMass);
-		m_rocket->applyThrust(10000.0);
-    }
-
-    m_rocket->updatePhysics(m_dt);
-    m_target->updatePosition(m_dt);
-    m_elapsedTime += m_dt;
-    double currentSpeed = rVel.findMagnitude();
-
     cv::Mat Frame = m_camera->createEmptyFrame();
     int PixelX = 0;
     int PixelY = 0;
     bool isVisible = m_camera->getPixelOffset(rPos, tPos, m_rocket->getPitchAngleRad(), PixelX, PixelY);
-    m_camera->renderUHD(Frame, isVisible, PixelX, PixelY);
+
+    if (isVisible) {
+        double angleDiff;
+        if (std::cos(m_rocket->getPitchAngleRad()) >= 0) {
+            angleDiff = PixelY * m_camera->getFieldOfView() / m_camera->getHeight();
+        }
+        else {
+            angleDiff = -PixelY * m_camera->getFieldOfView() / m_camera->getHeight();
+        }
+
+        double turnAmount = navConst * (angleDiff - m_prevAngleDiff);
+        m_prevAngleDiff = angleDiff;
+
+        while (turnAmount > PI) turnAmount -= 2 * PI;
+        while (turnAmount <= -PI) turnAmount += 2 * PI;
+
+        double maxTurnRate = m_rocket->getVelocity().findMagnitude() * 0.006;
+        double maxTurnAmount = maxTurnRate * m_dt;
+
+        if (turnAmount > maxTurnAmount) turnAmount = maxTurnAmount;
+        if (turnAmount < -maxTurnAmount) turnAmount = -maxTurnAmount;
+
+        m_rocket->setPitchAngleRad(m_rocket->getPitchAngleRad() + turnAmount);
+    }
+    else {
+        Vector relPos = tPos - rPos;
+        double targetAngle = std::atan2(relPos.getZ(), relPos.getX());
+        double angleDiff = targetAngle - m_rocket->getPitchAngleRad();
+
+        while (angleDiff > PI) angleDiff -= 2 * PI;
+        while (angleDiff <= -PI) angleDiff += 2 * PI;
+        double turnAmount = angleDiff;
+
+        double maxTurnRate = m_rocket->getVelocity().findMagnitude() * 0.006;
+        double maxTurnAmount = maxTurnRate * m_dt;
+
+        if (turnAmount > maxTurnAmount) turnAmount = maxTurnAmount;
+        if (turnAmount < -maxTurnAmount) turnAmount = -maxTurnAmount;
+
+        m_prevAngleDiff = 0.0;
+
+        m_rocket->setPitchAngleRad(m_rocket->getPitchAngleRad() + turnAmount);
+    }
+
+    double massLoss = 5.0;
+    double burnTime = 8.0;
+    if (m_elapsedTime < burnTime) {
+        double newMass = m_rocket->getMass() - massLoss * m_dt;
+        m_rocket->setMass(newMass);
+
+        double thrust = 22000.0;
+        if (isVisible) {
+            double VelAngleRad = std::atan2(m_rocket->getVelocity().getZ(), m_rocket->getVelocity().getX());
+            double weightConst = 0.20;
+            double weightedAngle = weightConst * m_rocket->getPitchAngleRad() + (1 - weightConst) * VelAngleRad;
+            m_rocket->applyThrustRad(thrust, weightedAngle);
+        }
+        else {
+            m_rocket->applyThrust(thrust);
+        }
+    }
+
+    bool showLockOn = isVisible;
+    if (isVisible) {
+        m_lockLostCounter = 0;
+    }
+    else {
+        m_lockLostCounter++;
+        if (m_lockLostCounter < 15 && m_elapsedTime > 0.5) {
+            showLockOn = true;
+        }
+    }
+
+    m_camera->renderUHD(Frame, showLockOn, PixelX, PixelY);
     QImage qimage = m_camera->convertMatToQImage(Frame);
+
+    m_rocket->updatePhysics(m_dt);
+    m_target->updatePosition(m_dt);
+    m_elapsedTime += m_dt;
+
+    double currentSpeed = rVel.findMagnitude();
+    double distanceToTarget = (m_target->getPosition() - m_rocket->getPosition()).findMagnitude();
 
     emit imageUpdated(qimage);
     emit telemetryUpdated(rPos.getX(), rPos.getZ(), tPos.getX(), tPos.getZ(), currentSpeed, m_elapsedTime);

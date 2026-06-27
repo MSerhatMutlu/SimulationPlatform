@@ -28,4 +28,6 @@ private:
 	QTimer* m_simTimer;
 	double m_dt;
 	double m_elapsedTime;
+	double m_prevAngleDiff;
+	int m_lockLostCounter;
 };
